@@ -353,7 +353,6 @@ const styles = StyleSheet.create({
     alignItems: 'flex-end',
     justifyContent: 'space-between',
     width: '100%',
-    height: chartHeight,
   },
   chartPoint: {
     alignItems: 'center',

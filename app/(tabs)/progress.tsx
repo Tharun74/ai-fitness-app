@@ -5,7 +5,7 @@ import {
   StyleSheet,
   ScrollView,
   TouchableOpacity,
-  Dimensions,
+  useWindowDimensions,
 } from 'react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
 import {
@@ -18,8 +18,6 @@ import {
   Clock,
   Zap,
 } from 'lucide-react-native';
-
-const { width } = Dimensions.get('window');
 
 interface ProgressData {
   workouts: number;
@@ -40,6 +38,7 @@ interface Achievement {
 
 export default function ProgressScreen() {
   const [selectedPeriod, setSelectedPeriod] = useState<'week' | 'month' | 'year'>('week');
+  const { width } = useWindowDimensions();
   
   const weeklyData: ProgressData = {
     workouts: 4,

@@ -70,6 +70,41 @@ export default function ProgressScreen() {
     }
   };
 
+  const renderChart = () => {
+    const maxValue = Math.max(...weeklyChart);
+    const minValue = Math.min(...weeklyChart);
+    const range = maxValue - minValue || 1;
+
+    return (
+      <View style={styles.chartContainer}>
+        <Text style={styles.chartTitle}>Weekly Posture Score</Text>
+        <View style={[styles.chart, { width: chartWidth, height: chartHeight }]}>
+          <View style={styles.chartLine}>
+            {weeklyChart.map((value, index) => {
+              const height = ((value - minValue) / range) * (chartHeight - 40) + 20;
+              return (
+                <View key={index} style={styles.chartPoint}>
+                  <View
+                    style={[
+                      styles.chartBar,
+                      {
+                        height,
+                        backgroundColor: value >= 85 ? '#10B981' : value >= 70 ? '#F59E0B' : '#EF4444',
+                      },
+                    ]}
+                  />
+                  <Text style={styles.chartLabel}>
+                    {['Mon', 'Tue', 'Wed', 'Thu', 'Fri', 'Sat', 'Sun'][index]}
+                  </Text>
+                </View>
+              );
+            })}
+          </View>
+        </View>
+      </View>
+    );
+  };
+
   const achievements: Achievement[] = [
     {
       id: '1',
@@ -112,41 +147,6 @@ export default function ProgressScreen() {
   const weeklyChart = [65, 78, 82, 90, 88, 92, 85];
   const chartHeight = 120;
   const chartWidth = width - 80;
-
-  const renderChart = () => {
-    const maxValue = Math.max(...weeklyChart);
-    const minValue = Math.min(...weeklyChart);
-    const range = maxValue - minValue || 1;
-
-    return (
-      <View style={styles.chartContainer}>
-        <Text style={styles.chartTitle}>Weekly Posture Score</Text>
-        <View style={[styles.chart, { width: chartWidth, height: chartHeight }]}>
-          <View style={styles.chartLine}>
-            {weeklyChart.map((value, index) => {
-              const height = ((value - minValue) / range) * (chartHeight - 40) + 20;
-              return (
-                <View key={index} style={styles.chartPoint}>
-                  <View
-                    style={[
-                      styles.chartBar,
-                      {
-                        height,
-                        backgroundColor: value >= 85 ? '#10B981' : value >= 70 ? '#F59E0B' : '#EF4444',
-                      },
-                    ]}
-                  />
-                  <Text style={styles.chartLabel}>
-                    {['Mon', 'Tue', 'Wed', 'Thu', 'Fri', 'Sat', 'Sun'][index]}
-                  </Text>
-                </View>
-              );
-            })}
-          </View>
-        </View>
-      </View>
-    );
-  };
 
   const getAchievementIcon = (iconName: string) => {
     switch (iconName) {

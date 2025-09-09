@@ -30,6 +30,14 @@ export default function CameraScreen() {
   const [isAnalyzing, setIsAnalyzing] = useState(false);
   const [postureData, setPostureData] = useState<PostureAnalysis | null>(null);
   const [isRecording, setIsRecording] = useState(false);
+  const isMounted = useRef(true);
+
+  useEffect(() => {
+    isMounted.current = true;
+    return () => {
+      isMounted.current = false;
+    };
+  }, []);
   
   if (!permission) {
     return <View style={styles.container} />;
@@ -60,6 +68,8 @@ export default function CameraScreen() {
     
     // Simulate pose estimation processing
     setTimeout(() => {
+      if (!isMounted.current) return;
+      
       const mockAnalysis: PostureAnalysis = {
         overall_score: Math.floor(Math.random() * 30) + 70, // 70-100%
         feedback: [

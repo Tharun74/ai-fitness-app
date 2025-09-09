@@ -70,6 +70,10 @@ export default function ProgressScreen() {
     }
   };
 
+  const weeklyChart = [65, 78, 82, 90, 88, 92, 85];
+  const chartHeight = 120;
+  const chartWidth = width - 80;
+
   const renderChart = () => {
     const maxValue = Math.max(...weeklyChart);
     const minValue = Math.min(...weeklyChart);
@@ -143,10 +147,6 @@ export default function ProgressScreen() {
       icon: 'zap',
     },
   ];
-
-  const weeklyChart = [65, 78, 82, 90, 88, 92, 85];
-  const chartHeight = 120;
-  const chartWidth = width - 80;
 
   const getAchievementIcon = (iconName: string) => {
     switch (iconName) {

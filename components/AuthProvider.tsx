@@ -1,4 +1,5 @@
 import React, { createContext, useContext, useState, useEffect, ReactNode } from 'react';
+import { useRef } from 'react';
 import * as SecureStore from 'expo-secure-store';
 
 interface User {
@@ -24,9 +25,13 @@ interface AuthProviderProps {
 export const AuthProvider: React.FC<AuthProviderProps> = ({ children }) => {
   const [user, setUser] = useState<User | null>(null);
   const [isLoading, setIsLoading] = useState(true);
+  const isMounted = useRef(true);
 
   useEffect(() => {
     checkAuthState();
+    return () => {
+      isMounted.current = false;
+    };
   }, []);
 
   const checkAuthState = async () => {
@@ -35,18 +40,24 @@ export const AuthProvider: React.FC<AuthProviderProps> = ({ children }) => {
       const userData = await SecureStore.getItemAsync('userData');
       
       if (token && userData) {
-        setUser(JSON.parse(userData));
+        if (isMounted.current) {
+          setUser(JSON.parse(userData));
+        }
       }
     } catch (error) {
       console.error('Error checking auth state:', error);
     } finally {
-      setIsLoading(false);
+      if (isMounted.current) {
+        setIsLoading(false);
+      }
     }
   };
 
   const login = async (email: string, password: string): Promise<boolean> => {
     try {
-      setIsLoading(true);
+      if (isMounted.current) {
+        setIsLoading(true);
+      }
       
       // Simulate API call
       await new Promise(resolve => setTimeout(resolve, 1000));
@@ -63,19 +74,25 @@ export const AuthProvider: React.FC<AuthProviderProps> = ({ children }) => {
       await SecureStore.setItemAsync('authToken', mockToken);
       await SecureStore.setItemAsync('userData', JSON.stringify(mockUser));
       
-      setUser(mockUser);
+      if (isMounted.current) {
+        setUser(mockUser);
+      }
       return true;
     } catch (error) {
       console.error('Login error:', error);
       return false;
     } finally {
-      setIsLoading(false);
+      if (isMounted.current) {
+        setIsLoading(false);
+      }
     }
   };
 
   const register = async (email: string, password: string, name: string): Promise<boolean> => {
     try {
-      setIsLoading(true);
+      if (isMounted.current) {
+        setIsLoading(true);
+      }
       
       // Simulate API call
       await new Promise(resolve => setTimeout(resolve, 1000));
@@ -92,13 +109,17 @@ export const AuthProvider: React.FC<AuthProviderProps> = ({ children }) => {
       await SecureStore.setItemAsync('authToken', mockToken);
       await SecureStore.setItemAsync('userData', JSON.stringify(mockUser));
       
-      setUser(mockUser);
+      if (isMounted.current) {
+        setUser(mockUser);
+      }
       return true;
     } catch (error) {
       console.error('Registration error:', error);
       return false;
     } finally {
-      setIsLoading(false);
+      if (isMounted.current) {
+        setIsLoading(false);
+      }
     }
   };
 
@@ -106,7 +127,9 @@ export const AuthProvider: React.FC<AuthProviderProps> = ({ children }) => {
     try {
       await SecureStore.deleteItemAsync('authToken');
       await SecureStore.deleteItemAsync('userData');
-      setUser(null);
+      if (isMounted.current) {
+        setUser(null);
+      }
     } catch (error) {
       console.error('Logout error:', error);
     }

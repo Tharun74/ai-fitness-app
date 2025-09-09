@@ -71,10 +71,8 @@ export default function ProgressScreen() {
   };
 
   const weeklyChart = [65, 78, 82, 90, 88, 92, 85];
-  const chartHeight = 120;
-  const chartWidth = width - 80;
 
-  const renderChart = () => {
+  const renderChart = (chartHeight: number, chartWidth: number) => {
     const maxValue = Math.max(...weeklyChart);
     const minValue = Math.min(...weeklyChart);
     const range = maxValue - minValue || 1;
@@ -214,7 +212,7 @@ export default function ProgressScreen() {
         </View>
 
         {/* Chart */}
-        {renderChart()}
+        {renderChart(120, width - 80)}
 
         {/* Achievements */}
         <View style={styles.achievementsSection}>

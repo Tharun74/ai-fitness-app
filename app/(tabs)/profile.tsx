@@ -11,6 +11,7 @@ import {
 } from 'react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
 import { User, CreditCard as Edit, Bell, Shield, CircleHelp as HelpCircle, Settings, LogOut, ChevronRight, Camera, Save } from 'lucide-react-native';
+import { useAuth } from '@/components/AuthProvider';
 
 interface UserProfile {
   name: string;
@@ -23,17 +24,18 @@ interface UserProfile {
 }
 
 export default function ProfileScreen() {
+  const { user, signOut } = useAuth();
   const [isEditing, setIsEditing] = useState(false);
   const [notificationsEnabled, setNotificationsEnabled] = useState(true);
   
   const [profile, setProfile] = useState<UserProfile>({
-    name: 'Alex Johnson',
-    email: 'alex.johnson@email.com',
-    age: 28,
-    height: 175,
-    weight: 72,
-    fitnessLevel: 'Intermediate',
-    goals: ['Weight Loss', 'Strength Building', 'Better Posture'],
+    name: user?.profile?.name || 'User',
+    email: user?.email || '',
+    age: user?.profile?.age || 0,
+    height: user?.profile?.height || 0,
+    weight: user?.profile?.weight || 0,
+    fitnessLevel: user?.profile?.fitness_level || 'Beginner',
+    goals: user?.profile?.goals || [],
   });
 
   const [editedProfile, setEditedProfile] = useState(profile);
@@ -55,7 +57,7 @@ export default function ProfileScreen() {
       'Are you sure you want to logout?',
       [
         { text: 'Cancel', style: 'cancel' },
-        { text: 'Logout', style: 'destructive', onPress: () => console.log('Logout') },
+        { text: 'Logout', style: 'destructive', onPress: signOut },
       ]
     );
   };

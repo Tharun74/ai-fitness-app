@@ -1,19 +1,13 @@
 import React, { createContext, useContext, useState, useEffect, ReactNode } from 'react';
 import { useRef } from 'react';
-import * as SecureStore from 'expo-secure-store';
-
-interface User {
-  id: string;
-  email: string;
-  name: string;
-}
+import { supabase, User } from '@/lib/supabase';
+import { Session } from '@supabase/supabase-js';
 
 interface AuthContextType {
   user: User | null;
+  session: Session | null;
   isLoading: boolean;
-  login: (email: string, password: string) => Promise<boolean>;
-  register: (email: string, password: string, name: string) => Promise<boolean>;
-  logout: () => Promise<void>;
+  signOut: () => Promise<void>;
 }
 
 const AuthContext = createContext<AuthContextType | undefined>(undefined);
@@ -24,22 +18,110 @@ interface AuthProviderProps {
 
 export const AuthProvider: React.FC<AuthProviderProps> = ({ children }) => {
   const [user, setUser] = useState<User | null>(null);
+  const [session, setSession] = useState<Session | null>(null);
   const [isLoading, setIsLoading] = useState(true);
   const isMounted = useRef(true);
 
   useEffect(() => {
-    checkAuthState();
+    // Get initial session
+    supabase.auth.getSession().then(({ data: { session } }) => {
+      if (isMounted.current) {
+        setSession(session);
+        if (session?.user) {
+          loadUserProfile(session.user.id);
+        } else {
+          setIsLoading(false);
+        }
+      }
+    });
+
+    // Listen for auth changes
+    const { data: { subscription } } = supabase.auth.onAuthStateChange(
+      async (event, session) => {
+        if (!isMounted.current) return;
+        
+        setSession(session);
+        
+        if (session?.user) {
+          await loadUserProfile(session.user.id);
+        } else {
+          setUser(null);
+          setIsLoading(false);
+        }
+      }
+    );
+
     return () => {
       isMounted.current = false;
+      subscription.unsubscribe();
     };
   }, []);
 
-  const checkAuthState = async () => {
+  const loadUserProfile = async (userId: string) => {
     try {
-      const token = await SecureStore.getItemAsync('authToken');
-      const userData = await SecureStore.getItemAsync('userData');
+      const { data: profile, error } = await supabase
+        .from('profiles')
+        .select('*')
+        .eq('id', userId)
+        .single();
       
-      if (token && userData) {
+      if (!error && profile && isMounted.current) {
+        const userData: User = {
+          id: userId,
+          email: session?.user?.email || '',
+          profile,
+        };
+        setUser(userData);
+      } else if (isMounted.current) {
+        // User exists but no profile (needs onboarding)
+        const userData: User = {
+          id: userId,
+          email: session?.user?.email || '',
+        };
+        setUser(userData);
+      }
+    } catch (error) {
+      console.error('Error loading user profile:', error);
+    } finally {
+      if (isMounted.current) {
+        setIsLoading(false);
+      }
+    }
+  };
+
+  const signOut = async (): Promise<void> => {
+    try {
+      await supabase.auth.signOut();
+      if (isMounted.current) {
+        setUser(null);
+        setSession(null);
+      }
+    } catch (error) {
+      console.error('Logout error:', error);
+    }
+  };
+
+  const value: AuthContextType = {
+    user,
+    session,
+    isLoading,
+    signOut,
+  };
+
+  return (
+    <AuthContext.Provider value={value}>
+      {children}
+    </AuthContext.Provider>
+  );
+};
+
+export const useAuth = (): AuthContextType => {
+  const context = useContext(AuthContext);
+  if (context === undefined) {
+    throw new Error('useAuth must be used within an AuthProvider');
+  }
+  return context;
+};
         if (isMounted.current) {
           setUser(JSON.parse(userData));
         }

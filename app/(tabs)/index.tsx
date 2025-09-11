@@ -15,6 +15,7 @@ import {
   Calendar,
   TrendingUp,
   Zap,
+  Camera,
 } from 'lucide-react-native';
 
 export default function HomeScreen() {
